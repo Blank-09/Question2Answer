@@ -38,9 +38,9 @@ public class AppTest {
     private final String CHATGPT_URL = "https://chat.openai.com/";
 
     // Update the path to your Chrome profile directory
-    private final String USER_DATA_DIR = "C:\\Users\\Lenovo\\AppData\\Local\\Google\\Chrome\\User Data\\";
-    private final String PROFILE_DIRECTORY = "Profile 5";
-    private final String EXECUTABLE_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
+    private final String EXECUTABLE_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    private final String USER_DATA_DIR = "C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data\\";
+    private final String PROFILE_DIRECTORY = "Profile 1";
 
     private final String QUESTION_SHEET_PATH = "./assets/sheets/questions.xlsx";
     private final String REPORT_PATH = "./out/reports/index.html";
@@ -59,21 +59,19 @@ public class AppTest {
         int marks, sno;
 
         Question(Row row) {
-            Cell cellsno = row.getCell(0);
-            Cell cellQuestion = row.getCell(1);
-            Cell cellMarks = row.getCell(2);
-            Cell celladditionalInfo = row.getCell(3);
+            this.sno = (int) row.getCell(0).getNumericCellValue();
+            this.question = row.getCell(1).getStringCellValue();
+            this.marks = (int) row.getCell(2).getNumericCellValue();
 
-            this.sno = (int) cellsno.getNumericCellValue();
-            this.question = cellQuestion.getStringCellValue();
-            this.marks = (int) cellMarks.getNumericCellValue();
-            this.additionalInfo = celladditionalInfo.getStringCellValue();
+            Cell additionalInfo = row.getCell(3);
+            if (additionalInfo != null) {
+                this.additionalInfo = additionalInfo.getStringCellValue();
+            }
         }
 
         @Override
         public String toString() {
-
-            return  "S.No         :" + sno + "\n" +
+            return "S.No         :" + sno + "\n" +
                     "Question     :" + question + "\n" +
                     "Marks        :" + marks + "\n" +
                     "Additional Information :" + additionalInfo + "\n";
@@ -95,7 +93,7 @@ public class AppTest {
     }
 
     @BeforeTest
-    public void setUpExcel() throws IOException {
+    public void setupExcel() throws IOException {
 
         Workbook workbook = new XSSFWorkbook(QUESTION_SHEET_PATH);
         Sheet sheet = workbook.getSheetAt(0);
@@ -109,6 +107,7 @@ public class AppTest {
                 questions.add(new Question(row));
             }
         }
+
         workbook.close();
     }
 
@@ -120,7 +119,7 @@ public class AppTest {
     @AfterTest
     public void wrapUp() {
         driver.quit();
-        reports.flush();
+        // reports.flush();
     }
 
     // All your private function goes here lexigraphically
