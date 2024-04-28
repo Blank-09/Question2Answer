@@ -85,7 +85,7 @@ public class AppTest {
         options.addArguments("--user-data-dir=" + USER_DATA_DIR);
         options.addArguments("--profile-directory=" + PROFILE_DIRECTORY);
 
-        this.driver = new ChromeDriver();
+        this.driver = new ChromeDriver(options);
         this.actions = new Actions(driver);
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
