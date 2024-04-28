@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -41,6 +43,7 @@ import com.aventstack.extentreports.reporter.configuration.Theme;
 import com.google.common.io.Files;
 
 public class AppTest {
+    
 
     private final String CHATGPT_URL = "https://chat.openai.com/";
 
@@ -53,6 +56,7 @@ public class AppTest {
     private final String REPORT_PATH = "./out/reports/index.html";
     private final String LOGGER_PATH = "./out/logs/app.log";
     private final String SCREENSHOT_PATH = "./out/screenshots/";
+    Logger logger = LogManager.getLogger(getClass());
 
     WebDriver driver;
     Actions actions;
@@ -87,14 +91,23 @@ public class AppTest {
 
     @BeforeTest
     public void setupDriver() {
+        logger.info("Setting up Chrome driver...");
         ChromeOptions options = new ChromeOptions();
+        logger.info("Creating ChromeOptions object...");
         options.setBinary(EXECUTABLE_PATH);
+        logger.info("Setting executable path...");
         options.addArguments("--user-data-dir=" + USER_DATA_DIR);
+        logger.info("Adding user data directory argument...");
         options.addArguments("--profile-directory=" + PROFILE_DIRECTORY);
+        logger.info("Adding profile directory argument...");
 
         this.driver = new ChromeDriver(options);
+        logger.info("Creating ChromeDriver object...");
         this.actions = new Actions(driver);
+        logger.info("Creating Actions object...");
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        logger.info("Creating WebDriverWait object...");
+        logger.info("Chrome driver setup complete.");
 
     }
 
@@ -120,35 +133,57 @@ public class AppTest {
     @Test(priority = 1)
     public void getAnswersFromChat() throws InterruptedException {
 
+        logger.info("Getting answers from chat...");
+    try {
         driver.get(CHATGPT_URL);
-
-        // Assuming 'driver' and 'questions' are properly instantiated
+        logger.info("Navigating to ChatGPT URL...");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
+        logger.info("Creating WebDriverWait object...");
+
         By textareaLocator = By.id("prompt-textarea");
+        logger.info("Creating textareaLocator object...");
+
         By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
+        logger.info("Creating submitButtonLocator object...");
 
         for (Question question : questions) {
             String questionText = question.question;
+            logger.info("Getting question text...");
+
             String marks = ". Answer the question as " + question.marks + " marks";
+            logger.info("Creating marks string...");
+
             String additionalInfo = "";
 
-            if (question.additionalInfo != null && !question.additionalInfo.isEmpty())
+            if (question.additionalInfo!= null &&!question.additionalInfo.isEmpty()) {
                 additionalInfo = " and add the following information: " + question.additionalInfo;
+                logger.info("Adding additional information...");
+            }
 
             String prompt = questionText + marks + additionalInfo;
+            logger.info("Creating prompt string...");
 
             // Entering question text into the text area
             driver.findElement(textareaLocator).sendKeys(prompt);
+            logger.info("Entering question text into text area...");
 
             // Clicking the button to submit the question
             driver.findElement(submitButtonLocator).click();
+            logger.info("Clicking submit button...");
 
             // Waiting for the button to disappear and then reappear
             wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
+            logger.info("Waiting for submit button to disappear...");
             wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
+            logger.info("Waiting for submit button to reappear...");
             Thread.sleep(5000);
+            logger.info("Waiting for 5 seconds...");
         }
+    } catch (Exception e) {
+        logger.error("An error occurred while getting answers from chat: ", e);
+    }
+    logger.info("Getting answers from chat complete.");
     }
 
     @AfterTest
