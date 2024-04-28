@@ -3,6 +3,8 @@ package com.automation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -18,13 +20,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Pdf;
+import org.openqa.selenium.PrintsPage;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.print.PrintOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -49,14 +55,15 @@ public class AppTest {
     private final String REPORT_PATH = "./out/reports/index.html";
     private final String LOGGER_PATH = "./out/logs/app.log";
     private final String SCREENSHOT_PATH = "./out/screenshots/";
+    private final String PDF_PATH = "./out/result/";
 
-    WebDriver driver;
-    Actions actions;
-    ExtentReports reports;
-    Wait<WebDriver> wait;
-    List<Question> questions;
+    private WebDriver driver;
+    private Actions actions;
+    private ExtentReports reports;
+    private Wait<WebDriver> wait;
+    private List<Question> questions;
 
-    java.util.logging.Logger logger = LogManager.getLogger(getClass());
+    private Logger logger = LogManager.getLogger(getClass());
 
     public class Question {
 
@@ -181,6 +188,24 @@ public class AppTest {
         }
 
         logger.info("ChatGPT Automation complete.");
+        logger.info("Testcase 1 completed.");
+    }
+
+    @Test(priority = 2)
+    public void generateChatToPDF() throws IOException {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript(
+                "document.querySelector('#__next>div').classList.remove('h-full', 'overflow-hidden');" +
+                "document.querySelector('#__next>div>div').classList.remove('overflow-hidden');" +
+                "document.querySelector('#__next main').classList.remove('overflow-auto');" +
+                "document.querySelector('#__next main')?.parentElement.classList.remove('overflow-hidden');" +
+                "document.querySelector('#__next main>div>div').classList.remove('overflow-hidden');" +
+                "document.querySelector('#__next main>div>div.w-full').classList.add('hidden');" +
+                "document.querySelector('#__next header')?.classList.add('hidden');" +
+                "document.body.classList.remove('dark');");
+
+        Pdf pdf = ((PrintsPage) driver).print(new PrintOptions());
+        Files.write(Paths.get(PDF_PATH + "answers.pdf"), OutputType.BYTES.convertFromBase64Png(pdf.getContent()));
     }
 
     @AfterTest
