@@ -111,8 +111,8 @@ public class AppTest {
         workbook.close();
     }
 
-    @Test
-    public void getAnswersFromChat() {
+    @Test(priority = 1)
+    public void getAnswersFromChat() throws InterruptedException {
 
         driver.get(CHATGPT_URL);
 
@@ -122,11 +122,18 @@ public class AppTest {
         By textareaLocator = By.id("prompt-textarea");
         By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
 
-        for (Question question : questions){
-            String questionText = question.toString();
+        for (Question question : questions) {
+            String questionText = question.question;
+            String marks = ". Answer the question as " + question.marks + " marks";
+            String additionalInfo = "";
+
+            if (question.additionalInfo != null && !question.additionalInfo.isEmpty())
+                additionalInfo = " and add the following information: " + question.additionalInfo;
+
+            String prompt = questionText + marks + additionalInfo;
 
             // Entering question text into the text area
-            driver.findElement(textareaLocator).sendKeys(questionText);
+            driver.findElement(textareaLocator).sendKeys(prompt);
 
             // Clicking the button to submit the question
             driver.findElement(submitButtonLocator).click();
@@ -134,7 +141,7 @@ public class AppTest {
             // Waiting for the button to disappear and then reappear
             wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
             wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
-
+            Thread.sleep(5000);
         }
     }
 
