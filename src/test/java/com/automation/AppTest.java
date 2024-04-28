@@ -3,6 +3,7 @@ package com.automation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -40,10 +41,8 @@ import org.testng.annotations.Test;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
-import com.google.common.io.Files;
 
 public class AppTest {
-    
 
     private final String CHATGPT_URL = "https://chat.openai.com/";
 
@@ -56,6 +55,8 @@ public class AppTest {
     private final String REPORT_PATH = "./out/reports/index.html";
     private final String LOGGER_PATH = "./out/logs/app.log";
     private final String SCREENSHOT_PATH = "./out/screenshots/";
+    private final String PDF_PATH = "./out/result/";
+
     Logger logger = LogManager.getLogger(getClass());
 
     WebDriver driver;
@@ -134,56 +135,74 @@ public class AppTest {
     public void getAnswersFromChat() throws InterruptedException {
 
         logger.info("Getting answers from chat...");
-    try {
-        driver.get(CHATGPT_URL);
-        logger.info("Navigating to ChatGPT URL...");
+        try {
+            driver.get(CHATGPT_URL);
+            logger.info("Navigating to ChatGPT URL...");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
-        logger.info("Creating WebDriverWait object...");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
+            logger.info("Creating WebDriverWait object...");
 
-        By textareaLocator = By.id("prompt-textarea");
-        logger.info("Creating textareaLocator object...");
+            By textareaLocator = By.id("prompt-textarea");
+            logger.info("Creating textareaLocator object...");
 
-        By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
-        logger.info("Creating submitButtonLocator object...");
+            By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
+            logger.info("Creating submitButtonLocator object...");
 
-        for (Question question : questions) {
-            String questionText = question.question;
-            logger.info("Getting question text...");
+            for (Question question : questions) {
+                String questionText = question.question;
+                logger.info("Getting question text...");
 
-            String marks = ". Answer the question as " + question.marks + " marks";
-            logger.info("Creating marks string...");
+                String marks = ". Answer the question as " + question.marks + " marks";
+                logger.info("Creating marks string...");
 
-            String additionalInfo = "";
+                String additionalInfo = "";
 
-            if (question.additionalInfo!= null &&!question.additionalInfo.isEmpty()) {
-                additionalInfo = " and add the following information: " + question.additionalInfo;
-                logger.info("Adding additional information...");
+                if (question.additionalInfo != null && !question.additionalInfo.isEmpty()) {
+                    additionalInfo = " and add the following information: " + question.additionalInfo;
+                    logger.info("Adding additional information...");
+                }
+
+                String prompt = questionText + marks + additionalInfo;
+                logger.info("Creating prompt string...");
+
+                // Entering question text into the text area
+                driver.findElement(textareaLocator).sendKeys(prompt);
+                logger.info("Entering question text into text area...");
+
+                // Clicking the button to submit the question
+                driver.findElement(submitButtonLocator).click();
+                logger.info("Clicking submit button...");
+
+                // Waiting for the button to disappear and then reappear
+                wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
+                logger.info("Waiting for submit button to disappear...");
+                wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
+                logger.info("Waiting for submit button to reappear...");
+                Thread.sleep(5000);
+                logger.info("Waiting for 5 seconds...");
             }
-
-            String prompt = questionText + marks + additionalInfo;
-            logger.info("Creating prompt string...");
-
-            // Entering question text into the text area
-            driver.findElement(textareaLocator).sendKeys(prompt);
-            logger.info("Entering question text into text area...");
-
-            // Clicking the button to submit the question
-            driver.findElement(submitButtonLocator).click();
-            logger.info("Clicking submit button...");
-
-            // Waiting for the button to disappear and then reappear
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
-            logger.info("Waiting for submit button to disappear...");
-            wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
-            logger.info("Waiting for submit button to reappear...");
-            Thread.sleep(5000);
-            logger.info("Waiting for 5 seconds...");
+        } catch (Exception e) {
+            logger.error("An error occurred while getting answers from chat: ", e);
         }
-    } catch (Exception e) {
-        logger.error("An error occurred while getting answers from chat: ", e);
+
+        logger.info("Getting answers from chat complete.");
     }
-    logger.info("Getting answers from chat complete.");
+
+    @Test(priority = 2)
+    public void generateChatToPDF() throws IOException {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript(
+                "document.querySelector('#__next>div').classList.remove('h-full', 'overflow-hidden');" +
+                "document.querySelector('#__next>div>div').classList.remove('overflow-hidden');" +
+                "document.querySelector('#__next main').classList.remove('overflow-auto');" +
+                "document.querySelector('#__next main')?.parentElement.classList.remove('overflow-hidden');" +
+                "document.querySelector('#__next main>div>div').classList.remove('overflow-hidden');" +
+                "document.querySelector('#__next main>div>div.w-full').classList.add('hidden');" +
+                "document.querySelector('#__next header')?.classList.add('hidden');" +
+                "document.body.classList.remove('dark');");
+
+        Pdf pdf = ((PrintsPage) driver).print(new PrintOptions());
+        Files.write(Paths.get(PDF_PATH + "answers.pdf"), OutputType.BYTES.convertFromBase64Png(pdf.getContent()));
     }
 
     @AfterTest
@@ -198,29 +217,5 @@ public class AppTest {
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         FileUtils.copyFile(screenshotFile, new File(SCREENSHOT_PATH + name + "_" + timestamp + ".png"));
     }
-
-    public void answersToPdf(){
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript(
-            "document.querySelector('#__next>div').classList.remove('h-full', 'overflow-hidden');" +
-            "document.querySelector('#__next>div>div').classList.remove('overflow-hidden');" +
-            "document.querySelector('#__next main').classList.remove('overflow-auto');" +
-            "document.querySelector('#__next main')?.parentElement.classList.remove('overflow-hidden');" +
-            "document.querySelector('#__next main>div>div').classList.remove('overflow-hidden');" +
-            "document.querySelector('#__next main>div>div.w-full').classList.add('hidden');" +
-            "document.querySelector('#__next header')?.classList.add('hidden');" +
-            "document.body.classList.remove('dark');"
-        );
-
-        Pdf pdf = ((PrintsPage)driver).print(new PrintOptions());
-        try{
-            Files.write(Paths.get("./answers.pdf"), OutputType.BYTES.convertFromBase64Png(pdf.getContent()));
-
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-    
 
 }
