@@ -1,0 +1,34 @@
+# Created at 2024-04-28T22:23:37.175
+TestSet has not finished before stream error has appeared >> initializing exit by non-null configuration: DEFAULT
+java.io.EOFException
+	at java.base/java.io.DataInputStream.readFully(DataInputStream.java:210)
+	at java.base/java.io.DataInputStream.readInt(DataInputStream.java:385)
+	at org.apache.maven.surefire.booter.MasterProcessCommand.decode(MasterProcessCommand.java:115)
+	at org.apache.maven.surefire.booter.CommandReader$CommandRunnable.run(CommandReader.java:391)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+
+# Created at 2024-04-28T22:23:50.497
+Unexpected IOException: 8,1,com.automation.AppTest,setupDriver(com.automation.AppTest),null,Could not start a new session. Possible causes are invalid address of the remote server or browser start-up failure. \000AHost info: host: 'MONIKA'\002C ip: '192.168.43.33'\000ABuild info: version: '4.19.1'\002C revision: 'abe0ee07dc'\000ASystem info: os.name: 'Windows 11'\002C os.arch: 'amd64'\002C os.version: '10.0'\002C java.version: '21.0.2'\000ADriver info: org.openqa.selenium.chrome.ChromeDriver\000ACommand: [null\002C newSession {capabilities=[Capabilities {browserName: chrome\002C goog:chromeOptions: {args: [--user-data-dir=C:\005CUsers\005Cks...\002C --profile-directory=Profile 1]\002C binary: C:\005CProgram Files\005CGoogle\005CChr...\002C extensions: []}}]}],null,Could not start a new session. Possible causes are invalid address of the remote server or browser start-up failure. \000AHost info: host: 'MONIKA'\002C ip: '192.168.43.33'\000ABuild info: version: '4.19.1'\002C revision: 'abe0ee07dc'\000ASystem info: os.name: 'Windows 11'\002C os.arch: 'amd64'\002C os.version: '10.0'\002C java.version: '21.0.2'\000ADriver info: org.openqa.selenium.chrome.ChromeDriver\000ACommand: [null\002C newSession {capabilities=[Capabilities {browserName: chrome\002C goog:chromeOptions: {args: [--user-data-dir=C:\005CUsers\005Cks...\002C --profile-directory=Profile 1]\002C binary: C:\005CProgram Files\005CGoogle\005CChr...\002C extensions: []}}]}],AppTest.setupDriver:89 \00BB SessionNotCreated Could not start a new session. Poss...,org.openqa.selenium.SessionNotCreatedException: \000ACould not start a new session. Possible causes are invalid address of the remote server or browser start-up failure. \000AHost info: host: 'MONIKA'\002C ip: '192.168.43.33'\000ABuild info: version: '4.19.1'\002C revision: 'abe0ee07dc'\000ASystem info: os.name: 'Windows 11'\002C os.arch: 'amd64'\002C os.version: '10.0'\002C java.version: '21.0.2'\000ADriver info: org.openqa.selenium.chrome.ChromeDriver\000ACommand: [null\002C newSession {capabilities=[Capabilities {browserName: chrome\002C goog:chromeOptions: {args: [--user-data-dir=C:\005CUsers\005Cks...\002C --profile-directory=Profile 1]\002C binary: C:\005CProgram Files\005CGoogle\005CChr...\002C extensions: []}}]}]\000A\0009at com.automation.AppTest.setupDriver(AppTest.java:89)\000ACaused by: java.io.UncheckedIOException: java.io.IOException: HTTP/1.1 header parser received no bytes\000A\0009at com.automation.AppTest.setupDriver(AppTest.java:89)\000ACaused by: java.io.IOException: HTTP/1.1 header parser received no bytes\000ACaused by: java.net.SocketException: Connection reset\000A
+
+
+# Created at 2024-04-28T22:23:50.499
+Unexpected IOException: 9,1,com.automation.AppTest,setupExcel(com.automation.AppTest),null,null,null
+
+
+# Created at 2024-04-28T22:23:50.526
+Unexpected IOException: 5,1,com.automation.AppTest,getAnswersFromChat(com.automation.AppTest),com.automation.AppTest,null,null
+
+
+# Created at 2024-04-28T22:23:50.537
+Unexpected IOException: 9,1,com.automation.AppTest,getAnswersFromChat(com.automation.AppTest),null,Could not start a new session. Possible causes are invalid address of the remote server or browser start-up failure. \000AHost info: host: 'MONIKA'\002C ip: '192.168.43.33'\000ABuild info: version: '4.19.1'\002C revision: 'abe0ee07dc'\000ASystem info: os.name: 'Windows 11'\002C os.arch: 'amd64'\002C os.version: '10.0'\002C java.version: '21.0.2'\000ADriver info: org.openqa.selenium.chrome.ChromeDriver\000ACommand: [null\002C newSession {capabilities=[Capabilities {browserName: chrome\002C goog:chromeOptions: {args: [--user-data-dir=C:\005CUsers\005Cks...\002C --profile-directory=Profile 1]\002C binary: C:\005CProgram Files\005CGoogle\005CChr...\002C extensions: []}}]}],null
+
+
+# Created at 2024-04-28T22:23:50.539
+Unexpected IOException: 9,1,com.automation.AppTest,wrapUp(com.automation.AppTest),null,null,null
+
+
+# Created at 2024-04-28T22:23:50.700
+Unexpected IOException: 2,1,org.apache.maven.surefire.testng.TestNGDirectoryTestSuite,com.automation.AppTest,null,null,null
+
+
