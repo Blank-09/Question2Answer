@@ -72,10 +72,10 @@ public class AppTest {
 
         @Override
         public String toString() {
-            return "S.No         :" + sno + " " +
-                    "Question     :" + question + " " +
-                    "Marks        :" + marks + " " +
-                    "Additional Information :" + additionalInfo ;
+            return "S.No         :" + sno + "\n" +
+                    "Question     :" + question + "\n" +
+                    "Marks        :" + marks + "\n" +
+                    "Additional Information :" + additionalInfo;
         }
     }
 
@@ -112,31 +112,29 @@ public class AppTest {
     }
 
     @Test
-    public void shouldAnswerWithTrue() {
-       
+    public void getAnswersFromChat() {
 
         driver.get(CHATGPT_URL);
 
         // Assuming 'driver' and 'questions' are properly instantiated
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
-        String textAreaSelector = "textarea";
-        String buttonXPath = "/html/body/div[1]/div[1]/div[2]/main/div[2]/div[2]/form/div/div[2]/div/button";
+        By textareaLocator = By.id("prompt-textarea");
+        By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
 
         for (Question question : questions){
-
             String questionText = question.toString();
-            
+
             // Entering question text into the text area
-            driver.findElement(By.tagName(textAreaSelector)).sendKeys(questionText);
-            
+            driver.findElement(textareaLocator).sendKeys(questionText);
+
             // Clicking the button to submit the question
-            driver.findElement(By.xpath(buttonXPath)).click();
-            
+            driver.findElement(submitButtonLocator).click();
+
             // Waiting for the button to disappear and then reappear
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(buttonXPath)));
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(buttonXPath)));
-            
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
+            wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
+
         }
     }
 
