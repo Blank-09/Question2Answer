@@ -23,6 +23,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterTest;
@@ -39,7 +40,7 @@ public class AppTest {
 
     // Update the path to your Chrome profile directory
     private final String EXECUTABLE_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-    private final String USER_DATA_DIR = "C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data\\";
+    private final String USER_DATA_DIR = "C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data";
     private final String PROFILE_DIRECTORY = "Profile 1";
 
     private final String QUESTION_SHEET_PATH = "./assets/sheets/questions.xlsx";
@@ -74,7 +75,7 @@ public class AppTest {
             return "S.No         :" + sno + "\n" +
                     "Question     :" + question + "\n" +
                     "Marks        :" + marks + "\n" +
-                    "Additional Information :" + additionalInfo + "\n";
+                    "Additional Information :" + additionalInfo;
         }
     }
 
@@ -89,7 +90,6 @@ public class AppTest {
         this.actions = new Actions(driver);
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
-        driver.get(CHATGPT_URL);
     }
 
     @BeforeTest
@@ -111,9 +111,38 @@ public class AppTest {
         workbook.close();
     }
 
-    @Test
-    public void shouldAnswerWithTrue() {
-        System.out.println("Test is running...");
+    @Test(priority = 1)
+    public void getAnswersFromChat() throws InterruptedException {
+
+        driver.get(CHATGPT_URL);
+
+        // Assuming 'driver' and 'questions' are properly instantiated
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
+        By textareaLocator = By.id("prompt-textarea");
+        By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
+
+        for (Question question : questions) {
+            String questionText = question.question;
+            String marks = ". Answer the question as " + question.marks + " marks";
+            String additionalInfo = "";
+
+            if (question.additionalInfo != null && !question.additionalInfo.isEmpty())
+                additionalInfo = " and add the following information: " + question.additionalInfo;
+
+            String prompt = questionText + marks + additionalInfo;
+
+            // Entering question text into the text area
+            driver.findElement(textareaLocator).sendKeys(prompt);
+
+            // Clicking the button to submit the question
+            driver.findElement(submitButtonLocator).click();
+
+            // Waiting for the button to disappear and then reappear
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
+            wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
+            Thread.sleep(5000);
+        }
     }
 
     @AfterTest
