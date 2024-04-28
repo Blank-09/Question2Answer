@@ -1,7 +1,6 @@
 package com.automation;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -149,7 +148,7 @@ public class AppTest {
             By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
 
             for (Question question : questions) {
-                logger.log("Querying question " + question.sno + " (" + question.marks + " marks)");
+                logger.info("Querying question " + question.sno + " (" + question.marks + " marks)");
 
                 String questionText = question.question;
                 String marks = ". Answer the question as " + question.marks + " marks";
@@ -159,11 +158,11 @@ public class AppTest {
                     logger.info("Adding additional information...");
                     additionalInfo = " and add the following information: " + question.additionalInfo;
                 } else {
-                    logger.warning("Additional Information not provided. Please provide it for better results.");
+                    logger.warn("Additional Information not provided. Please provide it for better results.");
                 }
 
                 String prompt = questionText + marks + additionalInfo;
-                logger.log("Prompt: " + prompt);
+                logger.info("Prompt: " + prompt);
 
                 // Entering question text into the text area
                 logger.info("Entering question text into textarea...");
@@ -221,9 +220,9 @@ public class AppTest {
     private void takeScreenshot(String name) throws IOException {
         logger.info("Taking Screenshot...");
 
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String screenshotPath = SCREENSHOT_PATH + name + "_" + timestamp + ".png";
         File screenshotFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
         FileUtils.copyFile(screenshotFile, new File(screenshotPath));
         logger.info("Screenshot saved at " + screenshotPath);
