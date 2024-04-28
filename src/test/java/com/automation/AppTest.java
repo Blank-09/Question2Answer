@@ -23,6 +23,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterTest;
@@ -39,7 +40,7 @@ public class AppTest {
 
     // Update the path to your Chrome profile directory
     private final String EXECUTABLE_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-    private final String USER_DATA_DIR = "C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data\\";
+    private final String USER_DATA_DIR = "C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data";
     private final String PROFILE_DIRECTORY = "Profile 1";
 
     private final String QUESTION_SHEET_PATH = "./assets/sheets/questions.xlsx";
@@ -71,10 +72,10 @@ public class AppTest {
 
         @Override
         public String toString() {
-            return "S.No         :" + sno + "\n" +
-                    "Question     :" + question + "\n" +
-                    "Marks        :" + marks + "\n" +
-                    "Additional Information :" + additionalInfo + "\n";
+            return "S.No         :" + sno + " " +
+                    "Question     :" + question + " " +
+                    "Marks        :" + marks + " " +
+                    "Additional Information :" + additionalInfo ;
         }
     }
 
@@ -89,7 +90,6 @@ public class AppTest {
         this.actions = new Actions(driver);
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
-        driver.get(CHATGPT_URL);
     }
 
     @BeforeTest
@@ -113,7 +113,31 @@ public class AppTest {
 
     @Test
     public void shouldAnswerWithTrue() {
-        System.out.println("Test is running...");
+       
+
+        driver.get(CHATGPT_URL);
+
+        // Assuming 'driver' and 'questions' are properly instantiated
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
+        String textAreaSelector = "textarea";
+        String buttonXPath = "/html/body/div[1]/div[1]/div[2]/main/div[2]/div[2]/form/div/div[2]/div/button";
+
+        for (Question question : questions){
+
+            String questionText = question.toString();
+            
+            // Entering question text into the text area
+            driver.findElement(By.tagName(textAreaSelector)).sendKeys(questionText);
+            
+            // Clicking the button to submit the question
+            driver.findElement(By.xpath(buttonXPath)).click();
+            
+            // Waiting for the button to disappear and then reappear
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(buttonXPath)));
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(buttonXPath)));
+            
+        }
     }
 
     @AfterTest
