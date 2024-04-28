@@ -11,11 +11,9 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
@@ -53,48 +51,34 @@ public class AppTest {
     Actions actions;
     ExtentReports reports;
     Wait<WebDriver> wait;
-    XSSFWorkbook workbook;
-    XSSFSheet sheet;
-
-
-    Question questions;
-    List<Question> questionsList;
+    List<Question> questions;
 
     public class Question {
 
-        String question,additionalInfo;
-        int marks,sno;
+        String question, additionalInfo;
+        int marks, sno;
 
         Question(Row row) {
             Cell cellsno = row.getCell(0);
-            Cell cellQuestion = row.getCell(1); 
+            Cell cellQuestion = row.getCell(1);
             Cell cellMarks = row.getCell(2);
-    
-            if (cellsno != null && cellsno.getCellType() == CellType.NUMERIC && 
-                cellQuestion != null && cellQuestion.getCellType() == CellType.STRING &&
-                cellMarks != null && cellMarks.getCellType() == CellType.NUMERIC) {
-    
-                this.sno = (int)cellsno.getNumericCellValue();
-                this.question = cellQuestion.getStringCellValue();
-                this.marks = (int) cellMarks.getNumericCellValue();
-            } 
-            else {
-                this.sno = 0;
-                this.question = "Default Question";
-                this.marks = 0;
-            }
+            Cell celladditionalInfo = row.getCell(3);
+
+            this.sno = (int) cellsno.getNumericCellValue();
+            this.question = cellQuestion.getStringCellValue();
+            this.marks = (int) cellMarks.getNumericCellValue();
+            this.additionalInfo = celladditionalInfo.getStringCellValue();
         }
 
         @Override
-        public String toString(){
+        public String toString() {
 
-            return "S.No         :"+sno+"\n"+
-                   "Question     :"+question+"\n" +
-                   "Marks        :"+marks+"\n" +
-                   "Additional Information :"+additionalInfo+"\n";
+            return  "S.No         :" + sno + "\n" +
+                    "Question     :" + question + "\n" +
+                    "Marks        :" + marks + "\n" +
+                    "Additional Information :" + additionalInfo + "\n";
         }
     }
-
 
     @BeforeTest
     public void setupDriver() {
@@ -112,26 +96,21 @@ public class AppTest {
 
     @BeforeTest
     public void setUpExcel() throws IOException {
-        
-        workbook = new XSSFWorkbook(QUESTION_SHEET_PATH);
-        sheet = workbook.getSheetAt(0);
 
-        questionsList = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(QUESTION_SHEET_PATH);
+        Sheet sheet = workbook.getSheetAt(0);
 
-        int rowCount=sheet.getLastRowNum();
-        questionsList = new ArrayList<>();
+        int rowCount = sheet.getLastRowNum();
+        questions = new ArrayList<>();
 
-        for(int i=1;i<=rowCount;i++)
-        {
+        for (int i = 1; i <= rowCount; i++) {
             Row row = sheet.getRow(i);
-            if(row!=null){
-                questionsList.add(new Question(row));
+            if (row != null) {
+                questions.add(new Question(row));
             }
         }
-    
         workbook.close();
     }
-
 
     @Test
     public void shouldAnswerWithTrue() {
