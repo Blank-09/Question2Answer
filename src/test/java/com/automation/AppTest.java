@@ -86,21 +86,21 @@ public class AppTest {
     @BeforeTest
     public void setupDriver() {
         logger.info("Setting up Chrome driver...");
-        ChromeOptions options = new ChromeOptions();
         logger.info("Creating ChromeOptions object...");
-        options.setBinary(EXECUTABLE_PATH);
+        ChromeOptions options = new ChromeOptions();
         logger.info("Setting executable path...");
-        options.addArguments("--user-data-dir=" + USER_DATA_DIR);
+        options.setBinary(EXECUTABLE_PATH);
         logger.info("Adding user data directory argument...");
-        options.addArguments("--profile-directory=" + PROFILE_DIRECTORY);
+        options.addArguments("--user-data-dir=" + USER_DATA_DIR);
         logger.info("Adding profile directory argument...");
+        options.addArguments("--profile-directory=" + PROFILE_DIRECTORY);
 
-        this.driver = new ChromeDriver(options);
         logger.info("Creating ChromeDriver object...");
-        this.actions = new Actions(driver);
+        this.driver = new ChromeDriver(options);
         logger.info("Creating Actions object...");
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        this.actions = new Actions(driver);
         logger.info("Creating WebDriverWait object...");
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         logger.info("Chrome driver setup complete.");
 
     }
@@ -129,50 +129,50 @@ public class AppTest {
 
         logger.info("Getting answers from chat...");
     try {
-        driver.get(CHATGPT_URL);
         logger.info("Navigating to ChatGPT URL...");
+        driver.get(CHATGPT_URL);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
         logger.info("Creating WebDriverWait object...");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(200));
 
-        By textareaLocator = By.id("prompt-textarea");
         logger.info("Creating textareaLocator object...");
+        By textareaLocator = By.id("prompt-textarea");
 
-        By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
         logger.info("Creating submitButtonLocator object...");
+        By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
 
         for (Question question : questions) {
-            String questionText = question.question;
             logger.info("Getting question text...");
+            String questionText = question.question;
 
-            String marks = ". Answer the question as " + question.marks + " marks";
             logger.info("Creating marks string...");
+            String marks = ". Answer the question as " + question.marks + " marks";
 
             String additionalInfo = "";
 
             if (question.additionalInfo!= null &&!question.additionalInfo.isEmpty()) {
-                additionalInfo = " and add the following information: " + question.additionalInfo;
                 logger.info("Adding additional information...");
+                additionalInfo = " and add the following information: " + question.additionalInfo;
             }
 
-            String prompt = questionText + marks + additionalInfo;
             logger.info("Creating prompt string...");
+            String prompt = questionText + marks + additionalInfo;
 
             // Entering question text into the text area
-            driver.findElement(textareaLocator).sendKeys(prompt);
             logger.info("Entering question text into text area...");
+            driver.findElement(textareaLocator).sendKeys(prompt);
 
             // Clicking the button to submit the question
-            driver.findElement(submitButtonLocator).click();
             logger.info("Clicking submit button...");
+            driver.findElement(submitButtonLocator).click();
 
             // Waiting for the button to disappear and then reappear
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
             logger.info("Waiting for submit button to disappear...");
-            wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(submitButtonLocator));
             logger.info("Waiting for submit button to reappear...");
-            Thread.sleep(5000);
+            wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
             logger.info("Waiting for 5 seconds...");
+            Thread.sleep(5000);
         }
     } catch (Exception e) {
         logger.error("An error occurred while getting answers from chat: ", e);
@@ -183,6 +183,7 @@ public class AppTest {
     @AfterTest
     public void wrapUp() {
         driver.quit();
+        logger.info("Quitting Driver");
         // reports.flush();
     }
 
