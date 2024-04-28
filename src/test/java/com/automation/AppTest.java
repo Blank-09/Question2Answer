@@ -149,7 +149,7 @@ public class AppTest {
             By submitButtonLocator = By.cssSelector("button[data-testid=send-button]");
 
             for (Question question : questions) {
-                logger.info("Querying question " + question.sno + " (" + question.marks + " marks)");
+                logger.log("Querying question " + question.sno + " (" + question.marks + " marks)");
 
                 String questionText = question.question;
                 String marks = ". Answer the question as " + question.marks + " marks";
@@ -159,11 +159,11 @@ public class AppTest {
                     logger.info("Adding additional information...");
                     additionalInfo = " and add the following information: " + question.additionalInfo;
                 } else {
-                    logger.warn("Additional Information not provided. Please provide it for better results.");
+                    logger.warning("Additional Information not provided. Please provide it for better results.");
                 }
 
                 String prompt = questionText + marks + additionalInfo;
-                logger.info("Prompt: " + prompt);
+                logger.log("Prompt: " + prompt);
 
                 // Entering question text into the text area
                 logger.info("Entering question text into textarea...");
