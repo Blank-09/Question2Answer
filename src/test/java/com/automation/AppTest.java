@@ -1,12 +1,16 @@
 package com.automation;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -32,9 +36,10 @@ import com.aventstack.extentreports.reporter.configuration.Theme;
 public class AppTest {
 
     private final String CHATGPT_URL = "https://chat.openai.com/";
-    
+
     // Update the path to your Chrome profile directory
-    private final String USER_DATA_DIR = "C:\\Users\\<your-username>\\AppData\\Local\\Google\\Chrome\\User Data\\";
+    private final String EXECUTABLE_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    private final String USER_DATA_DIR = "C:\\Users\\<username>\\AppData\\Local\\Google\\Chrome\\User Data\\";
     private final String PROFILE_DIRECTORY = "Profile 1";
 
     private final String QUESTION_SHEET_PATH = "./assets/sheets/questions.xlsx";
@@ -46,10 +51,37 @@ public class AppTest {
     Actions actions;
     ExtentReports reports;
     Wait<WebDriver> wait;
+    List<Question> questions;
+
+    public class Question {
+
+        String question, additionalInfo;
+        int marks, sno;
+
+        Question(Row row) {
+            this.sno = (int) row.getCell(0).getNumericCellValue();
+            this.question = row.getCell(1).getStringCellValue();
+            this.marks = (int) row.getCell(2).getNumericCellValue();
+
+            Cell additionalInfo = row.getCell(3);
+            if (additionalInfo != null) {
+                this.additionalInfo = additionalInfo.getStringCellValue();
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "S.No         :" + sno + "\n" +
+                    "Question     :" + question + "\n" +
+                    "Marks        :" + marks + "\n" +
+                    "Additional Information :" + additionalInfo + "\n";
+        }
+    }
 
     @BeforeTest
     public void setupDriver() {
         ChromeOptions options = new ChromeOptions();
+        options.setBinary(EXECUTABLE_PATH);
         options.addArguments("--user-data-dir=" + USER_DATA_DIR);
         options.addArguments("--profile-directory=" + PROFILE_DIRECTORY);
 
@@ -60,6 +92,25 @@ public class AppTest {
         driver.get(CHATGPT_URL);
     }
 
+    @BeforeTest
+    public void setupExcel() throws IOException {
+
+        Workbook workbook = new XSSFWorkbook(QUESTION_SHEET_PATH);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        int rowCount = sheet.getLastRowNum();
+        questions = new ArrayList<>();
+
+        for (int i = 1; i <= rowCount; i++) {
+            Row row = sheet.getRow(i);
+            if (row != null) {
+                questions.add(new Question(row));
+            }
+        }
+
+        workbook.close();
+    }
+
     @Test
     public void shouldAnswerWithTrue() {
         System.out.println("Test is running...");
@@ -68,7 +119,7 @@ public class AppTest {
     @AfterTest
     public void wrapUp() {
         driver.quit();
-        reports.flush();
+        // reports.flush();
     }
 
     // All your private function goes here lexigraphically
