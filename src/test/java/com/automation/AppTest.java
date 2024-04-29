@@ -38,6 +38,8 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 
@@ -116,24 +118,48 @@ public class AppTest {
     @BeforeTest
     public void setupExcel() throws IOException {
 
+        logger.info("Setting up Excel...");
+        logger.info("Reading excel file from " + QUESTION_SHEET_PATH);
         Workbook workbook = new XSSFWorkbook(QUESTION_SHEET_PATH);
         Sheet sheet = workbook.getSheetAt(0);
 
         int rowCount = sheet.getLastRowNum();
         questions = new ArrayList<>();
 
+        logger.info("Reading questions from Excel...");
+        logger.info("Total questions: " + rowCount + " retrived from Excel.");
         for (int i = 1; i <= rowCount; i++) {
             Row row = sheet.getRow(i);
             if (row != null) {
                 questions.add(new Question(row));
             }
         }
-
+        logger.info("Questions read successfully from Excel.");
         workbook.close();
+    }
+
+    @BeforeTest
+    public void setupExtentReports() {
+        logger.info("Setting up ExtentReports...");
+        logger.info("Creating ExtentSparkReporter object...");
+
+        ExtentSparkReporter sparkReporter = new ExtentSparkReporter(REPORT_PATH);
+        sparkReporter.config().setTheme(Theme.DARK);
+        sparkReporter.config().setDocumentTitle("ChatGPT Automation Report");
+        sparkReporter.config().setReportName("ChatGPT Automation Report");
+
+        logger.info("Creating ExtentReports object...");
+        reports = new ExtentReports();
+        reports.attachReporter(sparkReporter);
+
+        logger.info("ExtentReports setup complete.");
     }
 
     @Test(priority = 1)
     public void getAnswersFromChat() throws InterruptedException {
+
+        ExtentTest extentTest = reports.createTest("getAnswersFromChat", "Get answers from ChatGPT");
+        extentTest.assignCategory("Functional");
 
         logger.info("Initializing Testcase 1");
         logger.info("Preparing to initialize ChatGPT");
@@ -179,10 +205,12 @@ public class AppTest {
                 logger.info("Waiting for submit button to reappear...");
                 wait.until(ExpectedConditions.presenceOfElementLocated(submitButtonLocator));
 
+                extentTest.log(Status.INFO, "Question " + question.sno + " submitted successfully");
                 logger.info("Waiting for 5 seconds...");
                 Thread.sleep(5000);
             }
         } catch (Exception e) {
+            extentTest.log(Status.FAIL, "Couldn't get answers due to" + e.getMessage());
             logger.error("An error occurred while getting answers from Chat: ", e);
         }
 
@@ -192,19 +220,43 @@ public class AppTest {
 
     @Test(priority = 2)
     public void generateChatToPDF() throws IOException {
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript(
-                "document.querySelector('#__next>div').classList.remove('h-full', 'overflow-hidden');" +
-                "document.querySelector('#__next>div>div').classList.remove('overflow-hidden');" +
-                "document.querySelector('#__next main').classList.remove('overflow-auto');" +
-                "document.querySelector('#__next main')?.parentElement.classList.remove('overflow-hidden');" +
-                "document.querySelector('#__next main>div>div').classList.remove('overflow-hidden');" +
-                "document.querySelector('#__next main>div>div.w-full').classList.add('hidden');" +
-                "document.querySelector('#__next header')?.classList.add('hidden');" +
-                "document.body.classList.remove('dark');");
+        ExtentTest extentTest = reports.createTest("generateChatToPDF", "Generate PDF from chat");
+        extentTest.assignCategory("Functional");
 
-        Pdf pdf = ((PrintsPage) driver).print(new PrintOptions());
-        Files.write(Paths.get(PDF_PATH + "answers.pdf"), OutputType.BYTES.convertFromBase64Png(pdf.getContent()));
+        logger.info("Generating chat to PDF...");
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        logger.info("Preparing to edit the DOM...");
+        try {
+            js.executeScript(
+                    "document.querySelector('#__next>div').classList.remove('h-full', 'overflow-hidden');" +
+                            "document.querySelector('#__next>div>div').classList.remove('overflow-hidden');" +
+                            "document.querySelector('#__next main').classList.remove('overflow-auto');" +
+                            "document.querySelector('#__next main')?.parentElement.classList.remove('overflow-hidden');"
+                            +
+                            "document.querySelector('#__next main>div>div').classList.remove('overflow-hidden');" +
+                            "document.querySelector('#__next main>div>div.w-full').classList.add('hidden');" +
+                            "document.querySelector('#__next header')?.classList.add('hidden');" +
+                            "document.body.classList.remove('dark');");
+
+            logger.info("DOM edited successfully...");
+
+            logger.info("Preparing to make PDF");
+            PrintOptions printOptions = new PrintOptions();
+            printOptions.setBackground(true);
+            Pdf pdf = ((PrintsPage) driver).print(printOptions);
+
+            logger.info("Starting to make PDF");
+            Files.write(Paths.get(PDF_PATH + "answers.pdf"), OutputType.BYTES.convertFromBase64Png(pdf.getContent()));
+            logger.info("PDF generated successfully...");
+
+            extentTest.log(Status.PASS, "PDF generated successfully");
+            logger.info("Generating chat to PDF complete.");
+
+        } catch (Exception e) {
+            extentTest.log(Status.FAIL, "Couldn't generate PDF due to" + e.getMessage());
+            logger.error("An error occurred while generating PDF from chat: ", e);
+        }
     }
 
     @AfterTest
@@ -212,7 +264,7 @@ public class AppTest {
         logger.info("Wrapping up...");
         logger.info("Quitting WebDriver");
         driver.quit();
-        // reports.flush();
+        reports.flush();
         logger.info("Wrap-up complete");
     }
 
